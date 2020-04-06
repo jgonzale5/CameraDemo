@@ -10,6 +10,7 @@ public class PlayerController : MonoBehaviour
     public float backwardSpeed;
     public float strafeSpeed;
 
+    //Animation stuff
     float animationX = 0;
     float xVelocity = 0;
     float xSmoothTime = 0.05f;
@@ -17,37 +18,45 @@ public class PlayerController : MonoBehaviour
     float animationY = 0;
     float yVelocity = 0;
     float ySmoothTime = 0.05f;
+    //Animation stuff ends here
 
     // Update is called once per frame
     void Update()
     {
-        if (Input.GetButtonDown("Jump"))
-        {
-            animator.SetTrigger("Jump");
-        }
-
         float inputX = Input.GetAxis("Horizontal");
         float inputZ = Input.GetAxis("Vertical");
 
+        Vector3 movement = Vector3.zero;
+        //this is (0,0,0)
+
+        if (inputZ > 0)
+        {
+            //Adds the distance the player is going to move this frame in the direction theyre facing
+            movement += transform.forward * inputZ * forwardSpeed * Time.deltaTime;
+            //Adds the distance the player is going to move this frame to their right
+            movement += transform.right * inputX * strafeSpeed * Time.deltaTime;
+        }
+        else
+        {
+            //Adds the distance the player is going to move this frame back (because inputZ is negative)
+            movement += transform.forward * inputZ * backwardSpeed * Time.deltaTime;
+            //Adds the distance the player is going to move this frame to their left (because inputX is negative)
+            movement += transform.right * inputX * strafeSpeed * Time.deltaTime;
+        }
+
+        controller.Move(movement);
+
+        //Animation stuff begins here
         animationX = Mathf.SmoothDamp(animationX, inputX, ref xVelocity, 0.3f);
         animationY = Mathf.SmoothDamp(animationY, inputZ, ref yVelocity, 0.3f);
 
         animator.SetFloat("X", animationX);
         animator.SetFloat("Y", animationY);
 
-        Vector3 movement;
-
-        if (inputZ > 0)
+        if (Input.GetButtonDown("Jump"))
         {
-            movement = new Vector3(inputX * strafeSpeed * Time.deltaTime,
-                0, inputZ * forwardSpeed * Time.deltaTime);
+            animator.SetTrigger("Jump");
         }
-        else
-        {
-            movement = new Vector3(inputX * strafeSpeed * Time.deltaTime,
-                0, inputZ * backwardSpeed * Time.deltaTime);
-        }
-
-        controller.Move(movement);
+        //Animation stuff ends here
     }
 }
