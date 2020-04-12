@@ -10,6 +10,13 @@ public class PlayerController : MonoBehaviour
     public float backwardSpeed;
     public float strafeSpeed;
 
+    public float gravity = -9.81f;
+    public float fallVelocity = 0;
+    public GameObject floorCheck;
+    public float floorCheckLength = 0.1f;
+    public LayerMask floorLayers;
+    public float jumpHeight = 2f;
+
     //Animation stuff
     float animationX = 0;
     float xVelocity = 0;
@@ -44,6 +51,26 @@ public class PlayerController : MonoBehaviour
             movement += transform.right * inputX * strafeSpeed * Time.deltaTime;
         }
 
+        if (Physics.Raycast(floorCheck.transform.position, Vector3.down, floorCheckLength, floorLayers))
+        {
+            if (fallVelocity < 0)
+                fallVelocity = 0;
+
+            if (Input.GetButtonDown("Jump"))
+            {
+                animator.SetTrigger("Jump");
+                fallVelocity = Mathf.Sqrt(jumpHeight * -2f * gravity);
+            }
+
+            fallVelocity += gravity * Time.deltaTime * Time.deltaTime;
+        }
+        else
+        {
+
+            fallVelocity += gravity * Time.deltaTime * Time.deltaTime;
+        }
+        movement.y = fallVelocity;
+
         controller.Move(movement);
 
         //Animation stuff begins here
@@ -52,11 +79,6 @@ public class PlayerController : MonoBehaviour
 
         animator.SetFloat("X", animationX);
         animator.SetFloat("Y", animationY);
-
-        if (Input.GetButtonDown("Jump"))
-        {
-            animator.SetTrigger("Jump");
-        }
         //Animation stuff ends here
     }
 }
